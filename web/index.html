@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f4ee">
+  <title>Bend / A little experimental</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230d756d'/%3E%3Cpath d='M18 14h15c18 0 18 18 6 18 16 0 16 18-6 18H18z' fill='none' stroke='%23f5f4ee' stroke-width='5'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <div class="shell">
+    <header class="masthead">
+      <a class="brand" href="#fractal" aria-label="Bend experiments home">bend<span class="slash">/</span><span class="brand-sub">EXPERIMENTS</span></a>
+      <a class="language-link" href="https://bend-lang.com" target="_blank" rel="noreferrer"><span class="status-dot"></span> Made with Bend 2.0.39 <span aria-hidden="true">↗</span></a>
+    </header>
+    <section class="intro">
+      <div><p class="eyebrow">A FIELD GUIDE TO CURIOUS COMPUTATION</p><h1>Small rules. <em>Unexpected worlds.</em></h1></div>
+      <p class="intro-note">Six hands-on experiments in a new language.<br>Turn a dial, break a pattern, follow the math.</p>
+    </section>
+    <nav class="experiments" aria-label="Experiments">
+      <button class="experiment active" data-panel="fractal" aria-current="page"><span class="number">01</span><span><strong>Fractal atlas</strong><small>Find infinity at the edges</small></span><span class="nav-symbol" aria-hidden="true">✳</span></button>
+      <button class="experiment" data-panel="lights"><span class="number">02</span><span><strong>Lights out</strong><small>A puzzle with an exact answer</small></span><span class="nav-symbol grid-symbol" aria-hidden="true">▦</span></button>
+      <button class="experiment" data-panel="automaton"><span class="number">03</span><span><strong>Reversible universe</strong><small>Time is a two-way street</small></span><span class="nav-symbol" aria-hidden="true">⇄</span></button>
+      <button class="experiment" data-panel="gravity"><span class="number">04</span><span><strong>Gravity sandbox</strong><small>Two ways to follow an orbit</small></span><span class="nav-symbol" aria-hidden="true">◎</span></button>
+      <button class="experiment" data-panel="raytracer"><span class="number">05</span><span><strong>Marble museum</strong><small>Follow the light home</small></span><span class="nav-symbol" aria-hidden="true">◒</span></button>
+      <button class="experiment" data-panel="sorting"><span class="number">06</span><span><strong>Sorting orchestra</strong><small>Listen to order emerge</small></span><span class="nav-symbol" aria-hidden="true">♬</span></button>
+    </nav>
+    <main>
+      <section id="fractal" class="panel" aria-labelledby="fractal-title">
+        <div class="panel-heading"><div><p class="eyebrow">01 / RECURSION & COMPLEX NUMBERS</p><h2 id="fractal-title">An atlas without an end.</h2></div><span class="tag">z ← z² + c</span></div>
+        <div class="workspace">
+          <div class="visual-wrap">
+            <div class="stage fractal-stage"><span class="stage-label" id="fractal-label">MANDELBROT SET</span><canvas id="fractal-canvas" width="512" height="512" tabindex="0" role="img" aria-label="Mandelbrot fractal. Click to center and zoom; use zoom buttons with a keyboard."></canvas><span class="stage-corner">ℂ</span></div>
+            <div class="readout"><span id="fractal-coordinates">CENTER −0.5, 0.0</span><span id="fractal-status" role="status">Compiling curiosity…</span></div>
+          </div>
+          <aside class="controls" aria-label="Fractal controls">
+            <p class="eyebrow">THE PARAMETERS</p>
+            <label>World<select id="fractal-mode"><option value="mandelbrot">Mandelbrot set</option><option value="julia">Julia set</option></select></label>
+            <label for="iterations">Iterations <output id="iteration-value" for="iterations">96</output><input id="iterations" type="range" min="32" max="256" step="32" value="96"></label>
+            <div class="range-labels"><span>Fast sketch</span><span>Fine detail</span></div>
+            <div id="julia-controls" hidden><div class="paired"><label>Constant · real<input id="julia-x" type="number" min="-2" max="2" step="0.01" value="-0.75"></label><label>Imaginary<input id="julia-y" type="number" min="-2" max="2" step="0.01" value="0.11"></label></div></div>
+            <div class="stat-line"><span>Magnification</span><strong id="zoom-value">1×</strong></div>
+            <div class="paired"><button id="zoom-out" class="secondary">− Zoom out</button><button id="zoom-in" class="secondary">+ Zoom in</button></div>
+            <button id="fractal-reset" class="primary">Back to the beginning <span>↺</span></button>
+            <div class="field-note"><span class="note-index">OBSERVATION 01</span><p>A tiny equation makes an infinitely intricate boundary. Click the canvas to explore it.</p><p class="muted">Bend computes every pixel. JavaScript only colors the result.</p></div>
+          </aside>
+        </div>
+        <div class="under-the-hood"><span class="eyebrow">UNDER THE HOOD</span><p>Independent image tiles form a balanced fork/join tree. The same Bend source runs sequentially in this browser or across CPU threads in a native build.</p></div>
+      </section>
+      <section id="lights" class="panel" hidden aria-labelledby="lights-title">
+        <div class="panel-heading"><div><p class="eyebrow">02 / SEARCH & BITWISE ALGEBRA</p><h2 id="lights-title">Sixteen lights. One way out?</h2></div><span class="tag">65,536 possible press patterns</span></div>
+        <div class="workspace">
+          <div class="visual-wrap">
+            <div class="stage lights-stage"><span class="stage-label">THE BOARD / 4 × 4</span><div id="lights-board" class="lights-board" role="group" aria-label="Lights Out board"></div><p class="board-caption" id="board-caption">Turn every light off.</p></div>
+            <div class="readout"><span id="lights-moves">0 PRESSES</span><span id="lights-status" role="status">Your move.</span></div>
+          </div>
+          <aside class="controls" aria-label="Puzzle controls">
+            <p class="eyebrow">TRY IT YOURSELF</p><p class="control-copy">Press a light to flip it and its neighbors. No diagonals. No wrapping.</p>
+            <button id="lights-solve" class="primary">Find optimal solution <span>↗</span></button>
+            <button id="lights-apply" class="secondary" disabled>Apply solution</button>
+            <div class="stat-line"><span>Minimum remaining</span><strong id="lights-minimum">—</strong></div>
+            <button id="lights-new" class="secondary">New solvable puzzle <span>↻</span></button>
+            <div class="paired"><button id="lights-clear" class="quiet">Clear board</button><button id="lights-impossible" class="quiet">Impossible?</button></div>
+            <label class="check-label"><input type="checkbox" id="lights-edit"> Edit individual lights</label>
+            <div class="field-note"><span class="note-index">OBSERVATION 02</span><p>Not every board has a solution. Exact search finds the fewest presses—or tells you why to stop trying.</p><p class="muted">Outlined cells mark a minimum solution. Press order does not matter.</p></div>
+          </aside>
+        </div>
+        <div class="under-the-hood"><span class="eyebrow">UNDER THE HOOD</span><p>Bend tries the 16 possible first rows in a fork/join tree; each forces the remaining rows. This covers every solution without blindly trying all 65,536 press patterns.</p></div>
+      </section>
+      <section id="automaton" class="panel" hidden aria-labelledby="automaton-title">
+        <div class="panel-heading"><div><p class="eyebrow">03 / CELLULAR AUTOMATA & PROOFS</p><h2 id="automaton-title">What if nothing was lost?</h2></div><span class="tag">backward(forward(s)) = s</span></div>
+        <div class="workspace">
+          <div class="visual-wrap">
+            <div class="stage automaton-stage"><span class="stage-label">SECOND-ORDER RULE 90 / 128 CELLS</span><canvas id="automaton-canvas" width="768" height="768" role="img" aria-label="Space-time diagram of a reversible cellular automaton. Each row is one generation; time flows down."></canvas><span class="time-axis">TIME ↓</span></div>
+            <div class="readout"><span id="automaton-time">GENERATION +0</span><span id="automaton-status" role="status">Ready to travel.</span></div>
+          </div>
+          <aside class="controls" aria-label="Time controls">
+            <p class="eyebrow">CONTROL THE ARROW OF TIME</p>
+            <label>Initial condition<select id="automaton-seed"><option value="sparks">Three sparks</option><option value="single">Single spark</option><option value="noise">Deterministic noise</option></select></label>
+            <button id="automaton-play" class="primary">Run forward <span>▶</span></button>
+            <div class="paired"><button id="automaton-back" class="secondary">← Back 16</button><button id="automaton-forward" class="secondary">Forward 16 →</button></div>
+            <button id="automaton-verify" class="secondary">Travel 256 & rewind</button>
+            <button id="automaton-reset" class="quiet">Reset to generation zero ↺</button>
+            <div class="proof-note"><span class="status-dot"></span><strong>Reversibility, proved in Bend.</strong><p>For every finite row, forward then backward restores both state layers. No saved history needed.</p></div>
+            <div class="field-note"><span class="note-index">OBSERVATION 03</span><p>Remember just one previous instant and a destructive rule becomes reversible.</p><p class="muted">Fixed-off boundaries. Rows run downward from the current generation.</p></div>
+          </aside>
+        </div>
+        <div class="under-the-hood"><span class="eyebrow">THE LAW</span><p>next = past XOR left XOR right. The proof uses Boolean case analysis and induction over the entire row—not a finite set of examples.</p></div>
+      </section>
+      <section id="gravity" class="panel" hidden aria-labelledby="gravity-title">
+        <div class="panel-heading"><div><p class="eyebrow">04 / NUMERICAL INTEGRATION & GRAVITY</p><h2 id="gravity-title">Same force. Different futures.</h2></div><span class="tag">Velocity Verlet vs. explicit Euler</span></div>
+        <div class="workspace">
+          <div class="visual-wrap">
+            <div class="stage gravity-stage"><span class="stage-label">SOFTENED NEWTONIAN GRAVITY / G = 1</span><canvas id="gravity-canvas" width="1200" height="720" role="img" aria-label="Two orbit simulations. Velocity Verlet on the left and explicit Euler on the right, with colored body trails."></canvas></div>
+            <div class="readout"><span id="gravity-time">TIME 0.00</span><span id="gravity-status" role="status">Paused.</span></div>
+          </div>
+          <aside class="controls" aria-label="Gravity controls">
+            <p class="eyebrow">ONE INITIAL STATE, TWO METHODS</p>
+            <label>Orbital system<select id="gravity-preset"><option value="0">Binary stars</option><option value="1">Sun & planet</option><option value="2">Sun & two planets</option></select></label>
+            <label for="gravity-dt">Time step <output id="gravity-dt-value" for="gravity-dt">0.020</output><input id="gravity-dt" type="range" min="5" max="80" step="5" value="20"></label>
+            <button id="gravity-play" class="primary" aria-pressed="false">Run both simulations <span>▶</span></button>
+            <div class="paired"><button id="gravity-step" class="secondary">Advance 100</button><button id="gravity-reset" class="secondary">Reset ↺</button></div>
+            <div class="stat-line"><span>Verlet · energy drift</span><strong id="gravity-verlet-drift">0.000%</strong></div>
+            <div class="stat-line"><span>Euler · energy drift</span><strong id="gravity-euler-drift">0.000%</strong></div>
+            <div class="field-note"><span class="note-index">OBSERVATION 04</span><p>A numerical method is part of the model. Watch Euler's orbit drift while Verlet keeps its rhythm.</p><p class="muted">Both simulations use the same step size and forces. Smaller steps help; they do not make floating-point arithmetic exact.</p></div>
+          </aside>
+        </div>
+        <div class="under-the-hood"><span class="eyebrow">UNDER THE HOOD</span><p>Bend computes forces, both integration methods, and kinetic plus softened potential energy. JavaScript draws the trails. Changing the step size restarts both simulations for a fair comparison.</p></div>
+      </section>
+      <section id="raytracer" class="panel" hidden aria-labelledby="raytracer-title">
+        <div class="panel-heading"><div><p class="eyebrow">05 / RAYS, SHADOWS & REFLECTIONS</p><h2 id="raytracer-title">A small museum of light.</h2></div><span class="tag">Pure Bend · recursive ray tracing</span></div>
+        <div class="workspace">
+          <div class="visual-wrap">
+            <div class="stage ray-stage"><span class="stage-label">THREE SPHERES / ONE LIGHT</span><canvas id="raytracer-canvas" width="256" height="256" role="img" aria-label="Ray-traced teal, coral and gold spheres above a floor, with shadows and reflections."></canvas></div>
+            <div class="readout"><span id="raytracer-detail">256 × 256</span><span id="raytracer-status" role="status">Open the museum to render.</span></div>
+          </div>
+          <aside class="controls" aria-label="Ray tracer controls">
+            <p class="eyebrow">ARRANGE THE LIGHT</p>
+            <label for="ray-camera">Camera <output id="ray-camera-value" for="ray-camera">0.0</output><input id="ray-camera" type="range" min="-80" max="80" step="5" value="0"></label>
+            <label for="ray-light">Light position <output id="ray-light-value" for="ray-light">−3.0</output><input id="ray-light" type="range" min="-60" max="60" step="5" value="-30"></label>
+            <label for="ray-reflect">Reflectivity <output id="ray-reflect-value" for="ray-reflect">45%</output><input id="ray-reflect" type="range" min="0" max="90" step="5" value="45"></label>
+            <label class="check-label"><input id="ray-shadows" type="checkbox" checked> Cast shadows</label>
+            <label>Resolution<select id="ray-quality"><option value="7">128 × 128 · quick sketch</option><option value="8" selected>256 × 256 · balanced</option><option value="9">512 × 512 · fine detail</option></select></label>
+            <button id="ray-reset" class="primary">Reset the gallery <span>↺</span></button>
+            <div class="field-note"><span class="note-index">OBSERVATION 05</span><p>Every pixel asks a question: what does this ray meet? A reflection asks it again.</p><p class="muted">The scene is computed, not a photograph or an image-generation asset. Rendering stays off the UI thread.</p></div>
+          </aside>
+        </div>
+        <div class="under-the-hood"><span class="eyebrow">UNDER THE HOOD</span><p>Bend handles ray intersections, lighting, shadow visibility and bounded reflection paths. A tiled fork/join renderer also compiles to native CPU code; the browser target stays sequential.</p></div>
+      </section>
+      <section id="sorting" class="panel" hidden aria-labelledby="sorting-title">
+        <div class="panel-heading"><div><p class="eyebrow">06 / PARALLEL MERGE SORT & SONIFICATION</p><h2 id="sorting-title">Give disorder a rhythm.</h2></div><span class="tag">Split. Sort. Merge.</span></div>
+        <div class="workspace">
+          <div class="visual-wrap">
+            <div class="stage sorting-stage"><span class="stage-label">THE SCORE / 32 VALUES</span><canvas id="sorting-canvas" width="1200" height="720" role="img" aria-label="Bar chart of 32 values, animated through the merge stages computed by Bend."></canvas><span class="score-legend">HEIGHT → VALUE <span>GOLD → CHANGED</span></span></div>
+            <div class="readout"><span id="sorting-stage">STAGE 0</span><span id="sorting-status" role="status">Ready to conduct.</span></div>
+          </div>
+          <aside class="controls" aria-label="Sorting controls">
+            <p class="eyebrow">CONDUCT THE ALGORITHM</p>
+            <label>Starting score<select id="sorting-preset"><option value="shuffle">Shuffled scale</option><option value="reverse">Descending scale</option><option value="duplicates">Repeated notes</option><option value="sorted">Already ordered</option></select></label>
+            <button id="sorting-play" class="primary" aria-pressed="false">Play the sort <span>▶</span></button>
+            <div class="paired"><button id="sorting-step" class="secondary">Next stage →</button><button id="sorting-reset" class="secondary">Replay ↺</button></div>
+            <label for="sorting-speed">Stage duration <output id="sorting-speed-value" for="sorting-speed">700 ms</output><input id="sorting-speed" type="range" min="150" max="1200" step="50" value="700"></label>
+            <button id="sorting-sound" class="secondary" aria-pressed="false">Enable sound ♬</button>
+            <p id="sorting-audio-status" class="audio-status" role="status">Sound is off. Enable it to hear the merge stages.</p>
+            <div class="field-note"><span class="note-index">OBSERVATION 06</span><p>Small ordered islands join into larger ones. By the final stage, the whole score is in tune.</p><p class="muted">Bend computes every stage. Web Audio maps changed values to quiet notes, only after you opt in.</p></div>
+          </aside>
+        </div>
+        <div class="under-the-hood"><span class="eyebrow">UNDER THE HOOD</span><p>Independent halves sort through a fork/join tree. The stage trace preserves every input value, including duplicates; tests check ordering, length and the complete multiset.</p></div>
+      </section>
+    </main>
+    <footer><span><span class="status-dot"></span> Bend → JavaScript <span class="footer-separator">/</span> Sequential browser preview</span><span>No frameworks. No black-box math. <a href="https://github.com/lifanh/bend-experiments" target="_blank" rel="noreferrer">Explore the source ↗</a></span></footer>
+    <noscript>This playground needs JavaScript. The same Bend experiments also run natively; see the repository README.</noscript>
+  </div>
+  <script type="module" src="./lab.js"></script>
+</body>
+</html>

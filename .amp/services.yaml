@@ -1,0 +1,8 @@
+services:
+  bend-lab:
+    command: npm run dev
+    port: 3000
+    health: /
+    portal:
+      title: Bend experiments
+      description: Six interactive Bend experiments. Sorting audio is off until you enable it.

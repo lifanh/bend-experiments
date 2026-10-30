@@ -1,0 +1,5 @@
+dist/
+build/
+.amp/*
+!.amp/services.yaml
+node_modules/

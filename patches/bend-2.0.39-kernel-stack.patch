@@ -1,0 +1,33 @@
+diff --git a/bend2/safe.ts b/bend2/safe.ts
+index f7cec7b..2a1d677 100644
+--- a/bend2/safe.ts
++++ b/bend2/safe.ts
+@@ -1665,7 +1665,9 @@ export function run_read(bin: string, args: string[],
+ // if none. It checks a copy in a fresh private dir, which no one else
+ // can swap, and a kernel reading /dev/stdin got EBADF (1 in 1486)
+ function kernel_check(text: string): string | null {
+-  const env = { ...process.env, LEAN_STACK_SIZE_KB: "4194304" };
++  // A 4 GiB stack can prevent thread creation on constrained hosts. Let
++  // callers raise the 64 MiB default when a proof needs deeper recursion.
++  const env = { ...process.env, LEAN_STACK_SIZE_KB: process.env.LEAN_STACK_SIZE_KB || "65536" };
+   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "bendtt-"));
+   try {
+     const inp = path.join(dir, "in.bendtt");
+diff --git a/guide/GUIDE.md b/guide/GUIDE.md
+index dbee920..b7856a8 100644
+--- a/guide/GUIDE.md
++++ b/guide/GUIDE.md
+@@ -331,6 +331,13 @@ Base is a valid proof, which bend2 and the kernel both accept, and which relies
+ on no `@unsafe` or foreign code. `-o PROOF.bendtt` writes the translation the
+ kernel reads; the translation has no proof, so read it to confirm a law.
+ 
++The kernel's Lean thread stack defaults to 64 MiB. Set `LEAN_STACK_SIZE_KB`
++to a positive size in KiB to override it, for example
++`LEAN_STACK_SIZE_KB=131072 bend PROOF.bend --verdict` for 128 MiB. Unset or
++empty uses the default. Deep proofs may need more; a stack too large for the
++host can prevent thread creation. This setting also reaches a `$BENDTT`
++executable; it does not change the proof or the kernel's checks.
++
+ Bend has no tactics: a proposition is a type, and a proof is a def of that type.
+ `{a == b : T}` is an equality; `{==}` proves it when both sides compute to the
+ same term. Matching refines the goal in each case, a recursive call is the

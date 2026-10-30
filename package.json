@@ -1,0 +1,18 @@
+{
+  "name": "bend-experiments",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "dev": "npm run build && node scripts/serve.mjs",
+    "start": "node scripts/serve.mjs",
+    "proof": "node scripts/build.mjs --proof",
+    "verdict": "node scripts/build.mjs --verdict",
+    "test:kernel-stack": "node --test scripts/check-kernel-stack.mjs",
+    "test": "npm run build && node --test tests/*.test.mjs",
+    "native": "node scripts/build.mjs --native",
+    "bench": "npm run native && node scripts/benchmark.mjs"
+  }
+}

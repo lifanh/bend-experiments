@@ -1,0 +1,116 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+root=$(dirname "$(dirname "$(realpath "$0")")")
+tools="$HOME/.local/share/bend-experiments"
+cache="$HOME/.cache/bend-experiments"
+export BEND_NO_TELEMETRY=1
+started=$SECONDS
+
+if [[ $(uname -s) != Linux || $(uname -m) != x86_64 ]]; then
+  echo 'This orb setup targets Linux x86_64. See README for other platforms.' >&2
+  exit 1
+fi
+node -e 'if (Number(process.versions.node.split(".")[0]) < 22) process.exit(1)' || {
+  echo 'Node.js 22+ is required (included in Amp orbs).' >&2; exit 1;
+}
+bun --version >/dev/null || {
+  echo 'Bun is required for the patched proof launcher (included in Amp orbs).' >&2; exit 1;
+}
+
+missing=()
+for package in clang curl ca-certificates zstd git; do
+  dpkg-query -W -f='${Status}' "$package" 2>/dev/null | grep -q 'install ok installed' || missing+=("$package")
+done
+if ((${#missing[@]})); then
+  echo "Installing system prerequisites: ${missing[*]}"
+  sudo apt-get update -qq
+  sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends "${missing[@]}"
+fi
+mkdir -p "$tools" "$cache"
+
+# Download to a temporary file, verify the release digest, then cache it.
+download() {
+  local name=$1 url=$2 digest=$3
+  if [[ ! -f "$cache/$name" ]]; then
+    curl --proto '=https' --tlsv1.2 -fsSL --retry 3 --max-time 300 "$url" -o "$cache/$name.part"
+    printf '%s  %s\n' "$digest" "$cache/$name.part" | sha256sum --check --status
+    mv "$cache/$name.part" "$cache/$name"
+  fi
+  printf '%s  %s\n' "$digest" "$cache/$name" | sha256sum --check --status
+}
+
+if [[ ! -x "$tools/bend-2.0.39/bin/bend" ]]; then
+  echo 'Installing Bend 2.0.39 (verified release archive)'
+  download bend-2.0.39.tar.gz \
+    https://github.com/bendlang/bend/releases/download/v2.0.39/bend-2.0.39-linux-x64.tar.gz \
+    6cf462fd8f70b094a4950ebb709a9c4ffd8f1d1189d9cedf1fd63cd5d041c7ab
+  staging=$(mktemp -d "$tools/bend-install.XXXXXX")
+  tar -xzf "$cache/bend-2.0.39.tar.gz" -C "$staging" 2>"$cache/bend-tar.log"
+  mv "$staging/bend" "$tools/bend-2.0.39"
+  rmdir "$staging"
+fi
+
+if [[ ! -x "$tools/lean-4.34.0-linux/bin/lean" ]]; then
+  echo 'Installing Lean 4.34.0 (verified release archive; approximately 580 MB)'
+  download lean-4.34.0.tar.zst \
+    https://github.com/leanprover/lean4/releases/download/v4.34.0/lean-4.34.0-linux.tar.zst \
+    caaa98356098c85dc0fcbbd28e1ec66f39eb6551829972b752ff20e1286b646b
+  staging=$(mktemp -d "$tools/lean-install.XXXXXX")
+  tar --zstd -xf "$cache/lean-4.34.0.tar.zst" -C "$staging"
+  mv "$staging/lean-4.34.0-linux" "$tools/lean-4.34.0-linux"
+  rmdir "$staging"
+fi
+
+# Keep the binary release for compilation, but run --verdict from actual
+# patched source. Editing files beside the compiled release cannot fix it.
+patch_file="$root/patches/bend-2.0.39-kernel-stack.patch"
+patch_hash=$(sha256sum "$patch_file" | cut -d' ' -f1)
+source_dir="$tools/bend-source-2.0.39-$patch_hash"
+if [[ ! -f "$source_dir/bend2/main.ts" ]]; then
+  echo 'Installing pinned Bend source with the configurable kernel-stack fix'
+  staging=$(mktemp -d "$tools/source-install.XXXXXX")
+  git -c advice.detachedHead=false clone --quiet --depth 1 --branch v2.0.39 \
+    https://github.com/bendlang/bend.git "$staging"
+  [[ $(git -C "$staging" rev-parse HEAD) == a3efe8a3801f423827424227172eed9802c5e6cb ]]
+  git -C "$staging" apply --check "$patch_file"
+  git -C "$staging" apply "$patch_file"
+  mv "$staging" "$source_dir"
+fi
+cmp "$source_dir/bend2/bendtt.lean" "$tools/bend-2.0.39/bend2/bendtt.lean"
+printf '%s\n' "$source_dir" > "$tools/source-path"
+
+# Lean ships a private clang without general C headers. Bend's native target
+# must use Debian's complete compiler, while leanc keeps its own compiler.
+mkdir -p "$tools/native-bin"
+ln -sfn /usr/bin/clang "$tools/native-bin/clang"
+export PATH="$tools/native-bin:$tools/bend-2.0.39/bin:$tools/lean-4.34.0-linux/bin:$PATH"
+[[ $(bend version) == 'bend 2.0.39' ]]
+lean --version | grep -q 'version 4.34.0,'
+printf '#include <stdbool.h>\nint main(void) { return false; }\n' | clang -x c -fsyntax-only -
+source_hash=$(sha256sum "$tools/bend-2.0.39/bend2/bendtt.lean" | cut -d' ' -f1)
+kernel="$tools/kernel-4.34.0-$source_hash"
+if [[ ! -x "$kernel/bendtt" ]]; then
+  echo 'Compiling the shipped BendTT kernel with pinned Lean'
+  mkdir -p "$kernel"
+  lean --root="$tools/bend-2.0.39/bend2" -c "$kernel/bendtt.c" "$tools/bend-2.0.39/bend2/bendtt.lean"
+  leanc -O3 -DNDEBUG "$kernel/bendtt.c" -o "$kernel/bendtt"
+fi
+# The pointer is generated from the actual shipped kernel, never a guessed cache.
+printf '%s\n' "$kernel/bendtt" > "$tools/kernel-path"
+
+# Login shells start Amp and supervised services. Scope this hook to this repo.
+marker="# bend-experiments environment: $root"
+if ! grep -Fqx "$marker" "$HOME/.bash_profile" 2>/dev/null; then
+  {
+    printf '\n%s\n' "$marker"
+    printf 'case "$PWD/" in %q*) [[ ! -f %q ]] || source %q ;; esac\n' \
+      "$root/" "$root/.agents/env" "$root/.agents/env"
+  } >> "$HOME/.bash_profile"
+fi
+
+# Installations and proofs are finite setup work; the service owns the server.
+source "$root/.agents/env"
+npm --prefix "$root" run verdict
+npm --prefix "$root" run build
+echo "Orb setup ready in $((SECONDS - started))s; preview is declared in .amp/services.yaml."

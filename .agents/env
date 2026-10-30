@@ -1,0 +1,12 @@
+# Sourced by the repository-scoped login-shell hook installed by setup.
+_bend_tools="$HOME/.local/share/bend-experiments"
+export BEND="$_bend_tools/bend-2.0.39/bin/bend"
+export BEND_NO_TELEMETRY=1
+case ":$PATH:" in
+  *":$_bend_tools/native-bin:"*) ;;
+  *) export PATH="$_bend_tools/native-bin:$_bend_tools/bend-2.0.39/bin:$_bend_tools/lean-4.34.0-linux/bin:$PATH" ;;
+esac
+export BENDTT_KERNEL="$(cat "$_bend_tools/kernel-path")"
+export BEND_SOURCE="$(cat "$_bend_tools/source-path")"
+export BEND_VERDICT="$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")/scripts/bend-verdict.sh"
+unset _bend_tools
