@@ -2,6 +2,7 @@ import { spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, cpSync, renameSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { fileURLToPath } from 'node:url';
+import { experiments } from './experiments.mjs';
 
 process.chdir(fileURLToPath(new URL('..', import.meta.url)));
 const installed = `${homedir()}/.bend/bin/bend`;
@@ -22,9 +23,10 @@ if (version.status !== 0 || !/\b2\.0\.39\b/.test(version.stdout)) {
   process.exit(1);
 }
 const kernelCheck = process.argv.includes('--verdict');
-run(['PROOF.bend', ...(kernelCheck ? ['--verdict'] : [])], kernelCheck ? verdict : bend);
+for (const proof of ['PROOF.bend', 'experiments/vault-proof.bend']) {
+  run([proof, ...(kernelCheck ? ['--verdict'] : [])], kernelCheck ? verdict : bend);
+}
 if (process.argv.includes('--proof') || process.argv.includes('--verdict')) process.exit(0);
-const experiments = ['automaton', 'fractal', 'lights', 'gravity', 'raytracer', 'sorting'];
 if (process.argv.includes('--native')) {
   mkdirSync('build', { recursive: true });
   for (const name of experiments) {

@@ -16,7 +16,7 @@ This is the current **bendlang/bend** language, not an assumption about older Be
 
 The upstream main checkout inspected during exploration was `4982c105b9e8e06cc1d1e2d0d63c546dac4aa377`. It already contained APIs absent from installed 2.0.39 (notably `U32.popcount`), so the release's `bend base` and actual compile/run results were the authority. Build scripts pin 2.0.39.
 
-## Why these three
+## Why the first three
 
 The ranked shortlist is in the README. Fractals exercise independent numeric computation; Lights Out exercises exact finite search; reversible automata exercise proofs of state transitions. Their core computations live in Bend, while standard browser APIs provide the UI. This avoids learning a web framework instead of learning Bend.
 
@@ -59,7 +59,17 @@ The wrapper does not change proofs, ignore checker failures, edit the kernel, or
 ## Verification boundaries
 
 - Kept tests exercise generated public APIs, not private helpers. They compare Lights Out with a full independent enumeration; exercise known fractal orbits, asymmetric coordinates, tile coverage and a native/JS checksum; and exhaust automaton state pairs through width four plus multi-step round trips.
-- Proofs cover the automaton dynamics. They do not establish F32 numerical fidelity, browser accessibility, native compiler correctness, or solver optimality.
+- Proofs cover the automaton dynamics and, in the completed ten-experiment set, vault conservation, rejection identity and zero-transfer acceptance. They do not establish F32 numerical fidelity, browser accessibility, native compiler correctness, or solver optimality.
 - Fractal escape counts reaching the cap are inconclusive, not membership certificates. F32 imposes precision limits.
 - The UI is a sequential JS preview. CPU benchmarking uses native executables and checks equal outputs across thread counts. No GPU result or broad speedup claim is implied.
 - This is a local experimental playground, not a hardened public hosting service. The server serves only generated `dist/` assets and supports GET/HEAD.
+
+## Findings from experiments seven through ten
+
+The interpreter uses equality-indexed constructors for `Expr<t>` and an evaluator returning `Value(t)`. Raw syntax is elaborated before any evaluation; tests include bad unchosen branches and compiler rejection of incorrectly indexed constructors. This enforces typed construction, not a separately proved elaborator-correctness theorem.
+
+Both the interpreter and vault exposed a runtime boundary worth distinguishing from mathematical Nats: Bend 2.0.39 immediate Nats stop at **2^48−1**, including the JS target. Tests exercise exact arithmetic beyond U32, the upper runtime boundary, and fail-stop overflow. Browser inputs are deliberately much smaller. Generated wrappers check direct Nat arguments, but do not recursively validate every nested record or Boolean field.
+
+The vault theorem quantifies over mathematical Nats and proves a transfer cannot change the total. A second law says a rejected transfer returns the complete original ledger, not merely another ledger with the same sum. A third proves zero succeeds. The theorem does not imply that every finite machine can execute arbitrary Nat-sized requests.
+
+The maze's shortest-distance guarantee is checked against an independent graph oracle, not an alleged proof certificate. Reaction–diffusion is tested numerically with asymmetric stencils and periodic edges; its patterns are simulated rather than stored images. Each distinction is also surfaced in the playground.

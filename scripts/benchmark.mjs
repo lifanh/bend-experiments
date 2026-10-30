@@ -2,6 +2,7 @@ import { spawnSync } from 'node:child_process';
 import { performance } from 'node:perf_hooks';
 import { availableParallelism } from 'node:os';
 import assert from 'node:assert/strict';
+import { experiments } from './experiments.mjs';
 
 const threads = Math.min(4, availableParallelism());
 const expected = {
@@ -11,7 +12,7 @@ const expected = {
 };
 console.log('Native CPU / five interleaved runs / median wall time, including process startup.');
 console.log('Small workloads may be slower with more threads. No GPU is used.');
-for (const name of ['fractal', 'lights', 'automaton', 'gravity', 'raytracer', 'sorting']) {
+for (const name of experiments) {
   const reference = spawnSync(process.execPath, [`build/${name}.cjs`], { encoding: 'utf8', timeout: 120000 });
   assert.equal(reference.status, 0, reference.stderr || reference.error?.message);
   const output = reference.stdout.trim();

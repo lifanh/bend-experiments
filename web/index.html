@@ -16,7 +16,7 @@
     </header>
     <section class="intro">
       <div><p class="eyebrow">A FIELD GUIDE TO CURIOUS COMPUTATION</p><h1>Small rules. <em>Unexpected worlds.</em></h1></div>
-      <p class="intro-note">Six hands-on experiments in a new language.<br>Turn a dial, break a pattern, follow the math.</p>
+      <p class="intro-note">Ten hands-on experiments in a new language.<br>Turn a dial, break a pattern, follow the math.</p>
     </section>
     <nav class="experiments" aria-label="Experiments">
       <button class="experiment active" data-panel="fractal" aria-current="page"><span class="number">01</span><span><strong>Fractal atlas</strong><small>Find infinity at the edges</small></span><span class="nav-symbol" aria-hidden="true">✳</span></button>
@@ -25,6 +25,10 @@
       <button class="experiment" data-panel="gravity"><span class="number">04</span><span><strong>Gravity sandbox</strong><small>Two ways to follow an orbit</small></span><span class="nav-symbol" aria-hidden="true">◎</span></button>
       <button class="experiment" data-panel="raytracer"><span class="number">05</span><span><strong>Marble museum</strong><small>Follow the light home</small></span><span class="nav-symbol" aria-hidden="true">◒</span></button>
       <button class="experiment" data-panel="sorting"><span class="number">06</span><span><strong>Sorting orchestra</strong><small>Listen to order emerge</small></span><span class="nav-symbol" aria-hidden="true">♬</span></button>
+      <button class="experiment" data-panel="maze"><span class="number">07</span><span><strong>Maze cartographer</strong><small>Two ways to find the exit</small></span><span class="nav-symbol" aria-hidden="true">⌘</span></button>
+      <button class="experiment" data-panel="interpreter"><span class="number">08</span><span><strong>Typed interpreter</strong><small>A language within a language</small></span><span class="nav-symbol" aria-hidden="true">λ</span></button>
+      <button class="experiment" data-panel="garden"><span class="number">09</span><span><strong>Chemical garden</strong><small>Let a pattern grow</small></span><span class="nav-symbol" aria-hidden="true">❋</span></button>
+      <button class="experiment" data-panel="vault"><span class="number">10</span><span><strong>Proof-carrying vault</strong><small>Move tokens, never mint them</small></span><span class="nav-symbol" aria-hidden="true">◇</span></button>
     </nav>
     <main>
       <section id="fractal" class="panel" aria-labelledby="fractal-title">
@@ -147,6 +151,94 @@
           </aside>
         </div>
         <div class="under-the-hood"><span class="eyebrow">UNDER THE HOOD</span><p>Independent halves sort through a fork/join tree. The stage trace preserves every input value, including duplicates; tests check ordering, length and the complete multiset.</p></div>
+      </section>
+      <section id="maze" class="panel" hidden aria-labelledby="maze-title">
+        <div class="panel-heading"><div><p class="eyebrow">07 / GRAPH SEARCH & SHORTEST PATHS</p><h2 id="maze-title">The first way is not always shortest.</h2></div><span class="tag">Breadth first vs. depth first</span></div>
+        <div class="workspace">
+          <div class="visual-wrap">
+            <div class="stage maze-stage"><span class="stage-label">SAME MAZE / DIFFERENT SEARCHES</span><canvas id="maze-canvas" width="1200" height="720" role="img" aria-label="Two copies of a maze showing breadth-first and depth-first routes."></canvas></div>
+            <div class="readout"><span id="maze-detail">12 × 12 CELLS</span><span id="maze-status" role="status">Ready to map.</span></div>
+          </div>
+          <aside class="controls" aria-label="Maze controls">
+            <p class="eyebrow">CHOOSE YOUR DETOUR</p>
+            <div class="paired"><label>Seed<input id="maze-seed" type="number" min="0" max="4294967295" step="1" value="2026" required></label><label>Map size<select id="maze-size"><option value="12">12 × 12</option><option value="16">16 × 16</option></select></label></div>
+            <label class="check-label"><input id="maze-loops" type="checkbox" checked> Add loops & alternative routes</label>
+            <button id="maze-play" class="primary" aria-pressed="false">Replay the searches <span>▶</span></button>
+            <button id="maze-next" class="secondary">Draw another maze ↗</button>
+            <div class="stat-line"><span>Breadth first · route</span><strong id="maze-bfs">—</strong></div>
+            <div class="stat-line"><span>Depth first · route</span><strong id="maze-dfs">—</strong></div>
+            <div class="field-note"><span class="note-index">OBSERVATION 07</span><p>A wave explores every nearby choice. A wanderer follows one trail until it must turn back.</p><p class="muted">Tinted cells were explored. Bright lines mark the final routes. Breadth first finds a shortest path on this unweighted graph.</p></div>
+          </aside>
+        </div>
+        <div class="under-the-hood"><span class="eyebrow">UNDER THE HOOD</span><p>Bend generates the seeded passages and computes both search traces. Disable loops to get a tree with exactly one route between any two cells. Independent tests check connectivity, paths and shortest distances; this is not a formal shortest-path theorem.</p></div>
+      </section>
+      <section id="interpreter" class="panel" hidden aria-labelledby="interpreter-title">
+        <div class="panel-heading"><div><p class="eyebrow">08 / DEPENDENT TYPES & EVALUATION</p><h2 id="interpreter-title">Some programs should never run.</h2></div><span class="tag">Expr(type) → value of that type</span></div>
+        <div class="workspace">
+          <div class="visual-wrap">
+            <div class="stage interpreter-stage">
+              <span class="stage-label">THE EXPRESSION LAB / NAT + BOOL</span>
+              <div class="program-sheet"><span class="program-caption">YOUR EXPRESSION</span><pre id="interpreter-source"></pre><div class="type-pipeline"><span>Raw syntax</span><span aria-hidden="true">→</span><span id="interpreter-check">Type check</span><span aria-hidden="true">→</span><span id="interpreter-eval">Evaluate</span></div><div id="interpreter-answer" class="program-answer" role="status"></div></div>
+            </div>
+            <div class="readout"><span>STRUCTURED EDITOR / NO HOST EVAL</span><span id="interpreter-status">Waiting for an expression.</span></div>
+          </div>
+          <aside class="controls" aria-label="Interpreter controls">
+            <p class="eyebrow">EDIT THE INGREDIENTS</p>
+            <label>Expression<select id="interpreter-preset"><option value="branch">Conditional arithmetic</option><option value="compare">A Boolean result</option><option value="nested">Nested conditionals</option><option value="bad-add">Type error: add a Boolean</option><option value="bad-branch">Type error: mixed branches</option><option value="dead-branch">Type error: unchosen branch</option></select></label>
+            <div class="paired"><label>x · natural number<input id="interpreter-x" type="number" min="0" max="100" step="1" value="7" required></label><label>y · natural number<input id="interpreter-y" type="number" min="0" max="100" step="1" value="12" required></label></div>
+            <label class="check-label"><input id="interpreter-condition" type="checkbox" checked> Boolean literal is true</label>
+            <button id="interpreter-run" class="primary">Check & evaluate <span>→</span></button>
+            <div class="proof-note"><strong>Types before execution.</strong><p>The checked expression is indexed by its result type in Bend. Addition cannot contain a Boolean operand.</p></div>
+            <div class="field-note"><span class="note-index">OBSERVATION 08</span><p>Even a branch you never take has to make sense. Try hiding a type error behind “if true”.</p><p class="muted">This is a structured expression editor, not a general text parser. Bend performs both checking and evaluation.</p></div>
+          </aside>
+        </div>
+        <div class="under-the-hood"><span class="eyebrow">UNDER THE HOOD</span><p>Raw syntax crosses a checked boundary into a type-indexed expression tree. The total evaluator returns a natural number or Boolean of the corresponding type. The browser only builds the input syntax and displays Bend's result.</p></div>
+      </section>
+      <section id="garden" class="panel" hidden aria-labelledby="garden-title">
+        <div class="panel-heading"><div><p class="eyebrow">09 / REACTION, DIFFUSION & EMERGENCE</p><h2 id="garden-title">A garden with no gardener.</h2></div><span class="tag">Gray–Scott reaction–diffusion</span></div>
+        <div class="workspace">
+          <div class="visual-wrap">
+            <div class="stage garden-stage"><span class="stage-label">TWO CHEMICALS / A PERIODIC WORLD</span><canvas id="garden-canvas" width="64" height="64" role="img" aria-label="Chemical V concentration on a periodic grid. Pale gold means more V; dark teal means less."></canvas><span class="stage-corner">∇²</span></div>
+            <div class="readout"><span id="garden-time">STEP 0</span><span id="garden-status" role="status">Open the garden to grow a preview.</span></div>
+          </div>
+          <aside class="controls" aria-label="Garden controls">
+            <p class="eyebrow">FEED A SMALL DIFFERENCE</p>
+            <label>Recipe<select id="garden-recipe"><option value="spots">Dividing spots</option><option value="stripes" selected>Wandering stripes</option><option value="coral">Coral growth</option><option value="custom" disabled>Custom parameters</option></select></label>
+            <label>Initial seeds<select id="garden-pattern"><option value="0">Central patch</option><option value="1">Scattered patches</option><option value="2">A broken ring</option></select></label>
+            <label for="garden-feed">Feed <output id="garden-feed-value" for="garden-feed">0.0290</output><input id="garden-feed" type="range" min="100" max="800" step="1" value="290"></label>
+            <label for="garden-kill">Kill <output id="garden-kill-value" for="garden-kill">0.0570</output><input id="garden-kill" type="range" min="300" max="800" step="1" value="570"></label>
+            <button id="garden-play" class="primary" aria-pressed="false">Keep growing <span>▶</span></button>
+            <div class="paired"><button id="garden-step" class="secondary">Advance 200</button><button id="garden-reset" class="secondary">Reseed ↺</button></div>
+            <div class="field-note"><span class="note-index">OBSERVATION 09</span><p>Diffusion smooths a difference. Reaction amplifies it. Together they can draw a living-looking pattern.</p><p class="muted">F32, fixed time step, wrapping edges. Changing a recipe or parameter reseeds the world; some choices fade to uniformity.</p></div>
+          </aside>
+        </div>
+        <div class="under-the-hood"><span class="eyebrow">UNDER THE HOOD</span><p>Bend updates both chemicals simultaneously from a nine-point stencil. A worker keeps the sequential browser simulation off the UI thread. The opening preview is a real simulation, not a stored texture; pause or reseed at any time.</p></div>
+      </section>
+      <section id="vault" class="panel" hidden aria-labelledby="vault-title">
+        <div class="panel-heading"><div><p class="eyebrow">10 / STATE TRANSITIONS & CONSERVATION</p><h2 id="vault-title">Nothing up this vault's sleeve.</h2></div><span class="tag">Total after = total before</span></div>
+        <div class="workspace">
+          <div class="visual-wrap">
+            <div class="stage vault-stage"><span class="stage-label">A CLOSED ECONOMY / 100 TOKENS</span>
+              <div class="wallets"><div class="wallet"><span>ALICE</span><strong id="vault-left">80</strong><div id="vault-left-tokens" class="tokens" aria-hidden="true"></div></div><span class="wallet-arrow" aria-hidden="true">⇄</span><div class="wallet"><span>BOB</span><strong id="vault-right">20</strong><div id="vault-right-tokens" class="tokens" aria-hidden="true"></div></div></div>
+              <div class="vault-total"><span>CONSERVED TOTAL</span><strong id="vault-total">100</strong></div>
+              <ol id="vault-history" class="vault-history" aria-label="Recent transfer attempts"></ol>
+            </div>
+            <div class="readout"><span id="vault-count">0 TRANSFER ATTEMPTS</span><span id="vault-status" role="status">Ready. No real money involved.</span></div>
+          </div>
+          <aside class="controls" aria-label="Vault controls">
+            <p class="eyebrow">TRY TO BREAK THE LEDGER</p>
+            <form id="vault-form" class="controls">
+              <label>Direction<select id="vault-direction"><option value="right">Alice → Bob</option><option value="left">Bob → Alice</option></select></label>
+              <label>Amount · whole tokens<input id="vault-amount" type="number" min="0" max="10000" step="1" value="25" required></label>
+              <button id="vault-transfer" type="submit" class="primary">Transfer tokens <span>→</span></button>
+            </form>
+            <button id="vault-overdraft" class="secondary">Try an overdraft</button>
+            <button id="vault-reset" class="quiet">Reset to 80 / 20 ↺</button>
+            <div class="proof-note"><span class="status-dot"></span><strong>Conservation, proved in Bend.</strong><p>For every pair of natural-number balances, amount and direction, a transfer preserves the total—even a rejected one.</p></div>
+            <div class="field-note"><span class="note-index">OBSERVATION 10</span><p>A failed transfer moves nothing. A successful one only changes who holds the tokens.</p><p class="muted">An in-memory teaching model, not a banking system. No persistence, authentication, network or real assets.</p></div>
+          </aside>
+        </div>
+        <div class="under-the-hood"><span class="eyebrow">THE LAW</span><p>The conservation theorem is checked by the BendTT kernel alongside the reversibility laws. It covers the Bend transition for arbitrary natural numbers—not browser input, concurrent transactions or durable storage.</p></div>
       </section>
     </main>
     <footer><span><span class="status-dot"></span> Bend → JavaScript <span class="footer-separator">/</span> Sequential browser preview</span><span>No frameworks. No black-box math. <a href="https://github.com/lifanh/bend-experiments" target="_blank" rel="noreferrer">Explore the source ↗</a></span></footer>
